@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+		<link rel="stylesheet" href="css/jquery.mobile-1.4.2.min.css">
+		
+		<script src="js/jquery-1.10.2.min.js"></script>
+		<script src="js/jquery.mobile-1.4.2.min.js"></script>
+
+        <title>UAD</title>
+        <script type="text/javascript">
+            //window.localStorage.clear();
+            ShowRecordAll();
+            function printLog(message){
+                console.log(message);
+            }
+
+            function saveData(){
+                var record = {
+                    webName : $('#webName').val(),
+                    webLink : $('#webLink').val(),
+                    userName : $('#userName').val(),
+                    password1 : $('#password1').val(),
+                    passwordC : $('#passwordC').val()
+                };
+                var key = $('#uuid').val() == "" ?generateUUID() : $('#uuid').val();
+                localStorage.setItem(key, JSON.stringify(record));
+
+                ShowRecordAll();
+            }
+
+            function showData(){
+                $('#searchRecordDiv').empty();
+                for(var i=0, len=localStorage.length; i<len; i++) {
+                    var key = localStorage.key(i);
+                    var selectedRecode = JSON.parse(localStorage.getItem(key));
+
+                    var recordBtn = $('<input/>', {
+                        'type': 'button',
+                        'value': selectedRecode.webName,
+                        'onclick': 'showSelectedRecord("'+key+'")'
+                    });
+
+                    $('#searchRecordDiv').append(recordBtn);
+                }
+
+            }
+
+            function generateUUID(){
+                var d = new Date().getTime();
+                var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = (d + Math.random()*16)%16 | 0;
+                    d = Math.floor(d/16);
+                    return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+                });
+                return uuid;
+            }
+
+            function showSelectedRecord(key){
+                ShowAddRecordForm();
+                var selectedRecode = JSON.parse(localStorage.getItem(key));
+                $('#uuid').val(key);
+                $('#webName').val(selectedRecode.webName);
+                $('#webLink').val(selectedRecode.webLink);
+                $('#userName').val(selectedRecode.userName);
+                $('#password1').val(selectedRecode.password1);
+                $('#passwordC').val(selectedRecode.passwordC);
+                $('.ui-icon-delete').show();
+            }
+
+            function ShowRecordAll(){
+                $('#addRecordDiv').hide();
+                $('#searchRecordDiv').show();
+                showData();
+
+            }
+
+            function formCancel(){
+                $('#searchRecordDiv').show();
+                $('#addRecordDiv').hide();
+            }
+
+            function ShowAddRecordForm(){
+                $('#searchRecordDiv').hide();
+                $('#addRecordDiv').show();
+                $('.ui-icon-delete').hide();
+                document.getElementById("newRecordAddForm").reset();
+            }
+
+            function deleteRecord(){
+                navigator.notification.confirm(
+                        "Are you sure you want to delete?", // message
+                        deleteItem, // callback
+                        "Delete",   // title
+                        ['Yes', 'No']      // buttonName
+                );
+            }
+
+            function deleteItem(buttonIndex){
+                if(buttonIndex==1){
+                    var key = $('#uuid').val();
+                    localStorage.removeItem(key);
+                    ShowRecordAll();
+                }
+                else{
+                    //If don't want to exit
+                    e.preventDefault();
+                }
+            }
+
+        </script>
+    </head>
+
+    <body>
+        <!--enter you project code-->
+        <div class="test">
+            <div id="homeButtonDiv">
+                <a class="ui-btn ui-btn-inline ui-icon-home ui-btn-icon-left" value="submit" onClick="ShowRecordAll()">ShowAll</a>
+                <a class="ui-btn ui-btn-inline ui-icon-plus ui-btn-icon-left" value="submit" onClick="ShowAddRecordForm()">Add</a>
+
+            </div>
+            <div id="searchRecordDiv" style="display: block"></div>
+            <div id="addRecordDiv" style="display: none">
+                <form method="post" id="newRecordAddForm">
+                    <div class="ui-field-contain">
+                        <input type="hidden" id="uuid" />
+                        <div class="one-field">
+                            <label>Web Name: <span class="required"> * </span></label>
+                            <input type="text" id="webName" />
+                        </div>
+                        <div class="one-field">
+                            <label>Web Link: <span class="required"> * </span></label>
+                            <input type="text" id="webLink" />
+                        </div>
+                        <div class="one-field">
+                            <label>User Name: <span class="required"> * </span></label>
+                            <input type="text" id="userName" />
+                        </div>
+                        <div class="one-field">
+                            <label>Password: <span class="required"> * </span></label>
+                            <input type="text" id="password1" />
+                        </div>
+                        <div class="one-field">
+                            <label>Conform Password: <span class="required"> * </span></label>
+                            <input type="text" id="passwordC" />
+                        </div>
+                    </div>
+                    <a class="ui-btn ui-btn-inline ui-icon-check ui-btn-icon-left" value="submit" onClick="saveData()">save</a>
+                    <a class="ui-btn ui-btn-inline ui-icon-refresh ui-btn-icon-left" value="reset">reset</a>
+                    <a class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-left" value="Delete" onclick="deleteRecord()">Delete</a>
+                    <a class="ui-btn ui-btn-inline ui-icon-back ui-btn-icon-left" value="Cancel" onclick="formCancel()">Cancel</a>
+                </form>
+            </div>
+        </div>
+
+        <div class="app">
+            <div id="deviceready" class="blink">
+                <p class="event listening"></p>
+                <p class="event received"></p>
+            </div>
+        </div>
+        <script type="text/javascript" src="phonegap.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript">
+            app.initialize();
+        </script>
+
+
+		<script>
+			document.addEventListener("backbutton", function(e){
+				navigator.notification.confirm(
+					"Are you sure you want to exit?", // message
+					appExitButton, // callback
+					"UAD Title",   // title
+					['Yes', 'No']      // buttonName
+				);
+
+				function appExitButton(buttonIndex){
+					if(buttonIndex==1){
+						//if app exit is confirmed
+						e.preventDefault();
+                        //work
+						navigator.app.exitApp();
+					}
+					else{
+						//If don't want to exit
+						e.preventDefault();
+					}
+				}
+			}, false);
+		</script>
+    </body>
+</html>
